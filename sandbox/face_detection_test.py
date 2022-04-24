@@ -14,7 +14,7 @@ model_path = "../faced/models/"
 
 face_detector = FaceDetector()
 
-img_path = "phelbs.jpg"
+img_path = "faces.jpg"
 thresh = 0.8
 bgr_img = cv2.imread(img_path)
 rgb_img = cv2.cvtColor(bgr_img.copy(), cv2.COLOR_BGR2RGB)

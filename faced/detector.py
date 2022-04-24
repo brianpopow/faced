@@ -1,4 +1,4 @@
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import cv2
 import numpy as np
 import os
@@ -49,7 +49,8 @@ class FaceDetector(object):
 
     # Receives RGB numpy array
     def predict(self, frame, thresh=0.85):
-        input_img = cv2.resize(frame, (YOLO_SIZE, YOLO_SIZE)) / 255.
+        input_img = cv2.resize(frame, (YOLO_SIZE, YOLO_SIZE), interpolation=cv2.INTER_AREA) / 255.
+        #input_img = cv2.resize(frame, (YOLO_SIZE, YOLO_SIZE)) / 255.
         input_img = np.expand_dims(input_img, axis=0)
 
         pred = self.sess.run([self.prob, self.x_center, self.y_center, self.w, self.h], feed_dict={self.training: False, self.img: input_img})
@@ -163,7 +164,7 @@ class FaceCorrector(object):
     def predict(self, frame):
         # Preprocess
         input_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        input_img = cv2.resize(input_img, (CORRECTOR_SIZE, CORRECTOR_SIZE)) / 255.
+        input_img = cv2.resize(input_img, (CORRECTOR_SIZE, CORRECTOR_SIZE), interpolation=cv2.INTER_AREA) / 255.
         input_img = np.reshape(input_img, [1, CORRECTOR_SIZE, CORRECTOR_SIZE, 3])
 
         x, y, w, h = self.sess.run([self.x, self.y, self.w, self.h], feed_dict={self.training: False, self.img: input_img})
