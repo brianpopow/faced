@@ -1,3 +1,6 @@
+# ignore pycharm ide
+.idea
+
 # ignore images
 *.jpg
 *.png
