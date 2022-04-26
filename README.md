@@ -30,7 +30,7 @@ img = cv2.imread(img_path)
 rgb_img = cv2.cvtColor(img.copy(), cv2.COLOR_BGR2RGB)
 
 # Receives RGB numpy image (HxWxC) and
-# returns (x_center, y_center, width, height, prob) tuples. 
+# returns (x_center, y_center, width, height, prob) tuples.
 bboxes = face_detector.predict(rgb_img, thresh)
 
 # Use this utils function to annotate the image.

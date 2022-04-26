@@ -1,4 +1,6 @@
-import tensorflow.compat.v1 as tf
+import tensorflow as tf
+import tensorflow.compat.v1 as tf1
+import shutil
 import cv2
 import numpy as np
 import os
@@ -24,33 +26,35 @@ class FaceDetector(object):
         self.rows = cols.T
 
     def load_model(self, yolo_model, from_pb=True):
-        graph = tf.Graph()
+        graph = tf1.Graph()
         with graph.as_default():
-            self.sess = tf.Session()
+            self.sess = tf1.Session()
 
             if from_pb:
-                with tf.gfile.GFile(yolo_model, "rb") as f:
-                    graph_def = tf.GraphDef()
+                with tf1.gfile.GFile(yolo_model, "rb") as f:
+                    graph_def = tf1.GraphDef()
                     graph_def.ParseFromString(f.read())
-                    tf.import_graph_def(graph_def, name="") # If not, name is appended in op name
+                    tf1.import_graph_def(graph_def, name="") # If not, name is appended in op name
 
             else:
-                ckpt_path = tf.train.latest_checkpoint(yolo_model)
-                saver = tf.train.import_meta_graph('{}.meta'.format(ckpt_path))
+                ckpt_path = tf1.train.latest_checkpoint(yolo_model)
+                saver = tf1.train.import_meta_graph('{}.meta'.format(ckpt_path))
                 saver.restore(self.sess, ckpt_path)
 
-            self.img = tf.get_default_graph().get_tensor_by_name("img:0")
-            self.training = tf.get_default_graph().get_tensor_by_name("training:0")
-            self.prob = tf.get_default_graph().get_tensor_by_name("prob:0")
-            self.x_center = tf.get_default_graph().get_tensor_by_name("x_center:0")
-            self.y_center = tf.get_default_graph().get_tensor_by_name("y_center:0")
-            self.w = tf.get_default_graph().get_tensor_by_name("w:0")
-            self.h = tf.get_default_graph().get_tensor_by_name("h:0")
+            # tf1.train.write_graph(self.sess.graph_def, 'saved_model', 'saved_model.pb', as_text=False)
+            self.img = tf1.get_default_graph().get_tensor_by_name("img:0")
+            self.training = tf1.get_default_graph().get_tensor_by_name("training:0")
+            self.prob = tf1.get_default_graph().get_tensor_by_name("prob:0")
+            self.x_center = tf1.get_default_graph().get_tensor_by_name("x_center:0")
+            self.y_center = tf1.get_default_graph().get_tensor_by_name("y_center:0")
+            self.w = tf1.get_default_graph().get_tensor_by_name("w:0")
+            self.h = tf1.get_default_graph().get_tensor_by_name("h:0")
 
     # Receives RGB numpy array
     def predict(self, frame, thresh=0.85):
         input_img = cv2.resize(frame, (YOLO_SIZE, YOLO_SIZE), interpolation=cv2.INTER_AREA) / 255.
-        #input_img = cv2.resize(frame, (YOLO_SIZE, YOLO_SIZE)) / 255.
+        input_img_resized = cv2.resize(frame, (YOLO_SIZE, YOLO_SIZE), interpolation=cv2.INTER_AREA)
+        cv2.imwrite('resized.png', input_img_resized)
         input_img = np.expand_dims(input_img, axis=0)
 
         pred = self.sess.run([self.prob, self.x_center, self.y_center, self.w, self.h], feed_dict={self.training: False, self.img: input_img})
@@ -140,30 +144,32 @@ class FaceCorrector(object):
         self.load_model(os.path.join(MODELS_PATH, "face_corrector.pb"))
 
     def load_model(self, corrector_model, from_pb=True):
-        self.graph = tf.Graph()
+        self.graph = tf1.Graph()
         with self.graph.as_default():
-            self.sess = tf.Session()
+            self.sess = tf1.Session()
             if from_pb:
-                with tf.gfile.GFile(corrector_model, "rb") as f:
-                    graph_def = tf.GraphDef()
+                with tf1.gfile.GFile(corrector_model, "rb") as f:
+                    graph_def = tf1.GraphDef()
                     graph_def.ParseFromString(f.read())
-                    tf.import_graph_def(graph_def, name="") # If not, name is appended in op name
+                    tf1.import_graph_def(graph_def, name="") # If not, name is appended in op name
 
             else:
-                ckpt_path = tf.train.latest_checkpoint(corrector_model)
-                saver = tf.train.import_meta_graph('{}.meta'.format(ckpt_path))
+                ckpt_path = tf1.train.latest_checkpoint(corrector_model)
+                saver = tf1.train.import_meta_graph('{}.meta'.format(ckpt_path))
                 saver.restore(self.sess, ckpt_path)
 
-            self.img = tf.get_default_graph().get_tensor_by_name("img:0")
-            self.training = tf.get_default_graph().get_tensor_by_name("training:0")
-            self.x = tf.get_default_graph().get_tensor_by_name("X:0")
-            self.y = tf.get_default_graph().get_tensor_by_name("Y:0")
-            self.w = tf.get_default_graph().get_tensor_by_name("W:0")
-            self.h = tf.get_default_graph().get_tensor_by_name("H:0")
+            self.img = tf1.get_default_graph().get_tensor_by_name("img:0")
+            self.training = tf1.get_default_graph().get_tensor_by_name("training:0")
+            self.x = tf1.get_default_graph().get_tensor_by_name("X:0")
+            self.y = tf1.get_default_graph().get_tensor_by_name("Y:0")
+            self.w = tf1.get_default_graph().get_tensor_by_name("W:0")
+            self.h = tf1.get_default_graph().get_tensor_by_name("H:0")
 
     def predict(self, frame):
         # Preprocess
         input_img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # cv2.imwrite('face.png', input_img)
         input_img = cv2.resize(input_img, (CORRECTOR_SIZE, CORRECTOR_SIZE), interpolation=cv2.INTER_AREA) / 255.
         input_img = np.reshape(input_img, [1, CORRECTOR_SIZE, CORRECTOR_SIZE, 3])
 
