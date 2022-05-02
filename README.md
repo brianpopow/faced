@@ -19,6 +19,12 @@ Example results:
 
 There is an example project in the subfolder `csharp.`
 
+The conversion was done as following:
+
+```
+python -m tf2onnx.convert --verbose --input face_yolo.pb --opset 15 --inputs img:0 --inputs-as-nchw img --use_default img --outputs prob:0,x_center:0,y_center:0,w:0,h:0 --output faced.onnx
+```
+
 ## How to install
 
 ```bash
