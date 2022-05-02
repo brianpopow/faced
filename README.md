@@ -1,10 +1,23 @@
-# *faced*
+# Facedetector: *faced*
 
-🚀 😏 CPU (Near) Real Time face detection
+This is a fork of [**faced**](https://github.com/iitzco/faced), a (near) real time face detection running on the CPU.
 
 <p align="center">
   <img src="examples/demo_yolo.gif"/>
 </p>
+
+
+This fork converts the model from tensorflow 1.0 to ONNX and uses the .Net [ONNX runtime](https://github.com/microsoft/onnxruntime) to run the face detection with csharp. The image processing is done with [ImageSharp](https://github.com/SixLabors/ImageSharp).
+
+Unfortunatly converting the face corrector model (see describtion below) to ONNX did not work out. The results do not match the original model.
+But even without it the results look pretty ok and its reasonable fast. It takes **40 ms** on a Intel Core I7 6700K.
+
+Example results:
+<p align="center">
+  <img src="examples/example.png"/>
+</p>
+
+There is an example project in the subfolder `csharp.`
 
 ## How to install
 
