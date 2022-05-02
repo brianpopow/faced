@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using Faced.FaceDector;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -11,15 +10,11 @@ namespace Sandbox
         static void Main(string[] args)
         {
             string imageFilePath = @"faces.jpg";
-
             using Image<RgbaVector> image = Image.Load<RgbaVector>(imageFilePath);
             using FaceDetector faceDetector = new FaceDetector();
 
-            Stopwatch stopwatch = Stopwatch.StartNew();
             var predictions = faceDetector.DetectFaces(image);
-            stopwatch.Stop();
             
-            Console.WriteLine($"face detection took {stopwatch.ElapsedMilliseconds} ms.");
             Console.WriteLine($"found {predictions.Count} faces.");
             
             foreach (var prediction in predictions)
@@ -29,7 +24,7 @@ namespace Sandbox
 
             image.SaveAsPng("output.png");
 
-            Console.WriteLine("done!");
+            Console.WriteLine("output.png image written!");
         }
     }
 }
