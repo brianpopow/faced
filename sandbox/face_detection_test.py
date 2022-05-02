@@ -9,9 +9,6 @@ logging.basicConfig(format='%(asctime)s %(message)s')
 
 # for local testing
 model_path = "../faced/models/"
-# inside the container
-# model_path = "/app/networks/"
-
 face_detector = FaceDetector()
 
 img_path = "faces.jpg"
@@ -36,6 +33,3 @@ for i in range(detected_faces):
 
 ann_img = utils.annotate_image(bgr_img, face_detection_list)
 cv2.imwrite("found_boxes.jpg", ann_img)
-
-#blurred_img = image_utils.blur_boxes(image=bgr_img, face_detection_list=face_detection_list, kernel_size=0, sigma=25)
-#cv2.imwrite("blurred_boxes.jpg", blurred_img)
