@@ -51,15 +51,19 @@ namespace Faced.FaceDector
             });
 
             Tensor<float> inputTensor = new DenseTensor<float>(new[] { 1, ImageWidth, ImageHeight, 3 });
-            for (int y = 0; y < imageResized.Height; y++)
+            imageResized.ProcessPixelRows(accessor =>
             {
-                for (int x = 0; x < imageResized.Width; x++)
+                for (int y = 0; y < accessor.Height; y++)
                 {
-                    inputTensor[0, y, x, 0] = imageResized[x, y].R;
-                    inputTensor[0, y, x, 1] = imageResized[x, y].G;
-                    inputTensor[0, y, x, 2] = imageResized[x, y].B;
+                    Span<RgbaVector> pixelRow = accessor.GetRowSpan(y);
+                    for (int x = 0; x < accessor.Width; x++)
+                    {
+                        inputTensor[0, y, x, 0] = pixelRow[x].R;
+                        inputTensor[0, y, x, 1] = pixelRow[x].G;
+                        inputTensor[0, y, x, 2] = pixelRow[x].B;
+                    }
                 }
-            }
+            });
 
             Tensor<bool> trainingTensor = new DenseTensor<bool>(new[] { 1 });
             trainingTensor[0] = false;
