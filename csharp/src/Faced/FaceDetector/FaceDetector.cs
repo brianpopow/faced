@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
+using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
@@ -151,6 +152,7 @@ namespace Faced.FaceDector
             var startY = prediction.Y;
             var boxWidth = prediction.BoxWidth;
             var boxHeight = prediction.BoxHeight;
+            Font font = SystemFonts.CreateFont("Arial", 20);
             var points = new PointF[]
             {
                 new(startX, startY),
@@ -160,7 +162,11 @@ namespace Faced.FaceDector
                 new(startX, startY),
             };
 
-            image.Mutate(img => img.DrawLines(color, 2.0f, points));
+            image.Mutate(img =>
+            {
+                img.DrawLines(color, 2.0f, points);
+                img.DrawText($"{prediction.Confidence:0.00}", font, Color.Red, new PointF(startX, startY));
+            });
         }
 
         public void Dispose()
