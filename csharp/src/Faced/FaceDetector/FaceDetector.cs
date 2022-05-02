@@ -146,13 +146,13 @@ namespace Faced.FaceDector
             return correctedPredictions;
         }
 
-        public static void DrawPrediction(Image image, Prediction prediction, Color color)
+        public static void DrawPrediction(Image image, Prediction prediction, Color color, int fontSize = 18)
         {
             var startX = prediction.X;
             var startY = prediction.Y;
             var boxWidth = prediction.BoxWidth;
             var boxHeight = prediction.BoxHeight;
-            Font font = SystemFonts.CreateFont("Arial", 20);
+            Font font = SystemFonts.CreateFont("Arial", fontSize);
             var points = new PointF[]
             {
                 new(startX, startY),
