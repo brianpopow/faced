@@ -38,7 +38,7 @@ namespace Faced.FaceDector
             faceDetector = new InferenceSession(modelBytes);
         }
 
-        public List<Prediction> DetectFaces(Image<RgbaVector> image, float threshold = 0.8f)
+        public List<Prediction> DetectFaces(Image<RgbaVector> image, float threshold = 0.8f, bool noneMaximaSuppression = true)
         {
             var imageResized = image.Clone(x =>
             {
@@ -93,7 +93,56 @@ namespace Faced.FaceDector
                 gridPos++;
             }
 
-            return predictions;
+            if (!noneMaximaSuppression)
+            {
+                return predictions;
+            }
+
+            return NoneMaximaSuppression(predictions);
+        }
+
+        public static List<Prediction> NoneMaximaSuppression(List<Prediction> predictions)
+        {
+            bool[] suppress = new bool[predictions.Count];
+            float threshold = 0.2f;
+
+            for (int i = 0; i < predictions.Count; i++)
+            {
+                var faceRegion = predictions[i].FaceRegion;
+                var faceArea = faceRegion.Width * faceRegion.Height;
+                var confidence = predictions[i].Confidence;
+                for (int j = 0; j < predictions.Count; j++)
+                {
+                    if (i == j)
+                    {
+                        continue;
+                    }
+
+                    var nextFaceRegion = predictions[j].FaceRegion;
+                    var nextFaceConfidence = predictions[j].Confidence;
+                    if (faceRegion.IntersectsWith(nextFaceRegion))
+                    {
+                        var intersection = Rectangle.Intersect(faceRegion, nextFaceRegion);
+                        var intersectionRegion = intersection.Width * intersection.Height;
+                        if (intersectionRegion > faceArea * threshold && nextFaceConfidence > confidence)
+                        {
+                            suppress[i] = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            List<Prediction> correctedPredictions = new List<Prediction>(predictions.Count);
+            for (int i = 0; i < suppress.Length; i++)
+            {
+                if (!suppress[i])
+                {
+                    correctedPredictions.Add(predictions[i]);
+                }
+            }
+
+            return correctedPredictions;
         }
 
         public static void DrawPrediction(Image image, Prediction prediction, Color color)
@@ -102,13 +151,13 @@ namespace Faced.FaceDector
             var startY = prediction.Y;
             var boxWidth = prediction.BoxWidth;
             var boxHeight = prediction.BoxHeight;
-            var points = new PointF[5]
+            var points = new PointF[]
             {
-                new PointF(startX, startY),
-                new PointF(startX + boxWidth, startY),
-                new PointF(startX + boxWidth, startY + boxHeight),
-                new PointF(startX, startY + boxHeight),
-                new PointF(startX, startY),
+                new(startX, startY),
+                new(startX + boxWidth, startY),
+                new(startX + boxWidth, startY + boxHeight),
+                new(startX, startY + boxHeight),
+                new(startX, startY),
             };
 
             image.Mutate(img => img.DrawLines(color, 2.0f, points));

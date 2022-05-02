@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using SixLabors.ImageSharp;
 
 namespace Faced
 {
@@ -42,6 +43,8 @@ namespace Faced
             this.Confidence = confidence;
             this.X = startX;
             this.Y = startY;
+
+            this.FaceRegion = new Rectangle((int)startX, (int)startY, (int)this.BoxWidth, (int)this.BoxHeight);
         }
 
         public float Confidence { get; set; }
@@ -53,5 +56,7 @@ namespace Faced
         public float BoxWidth { get; set; }
 
         public float BoxHeight { get; set; }
+
+        public Rectangle FaceRegion { get; set; }
     }
 }
