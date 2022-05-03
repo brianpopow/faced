@@ -10,14 +10,42 @@ This is a fork of [**faced**](https://github.com/iitzco/faced), a (near) real ti
 This fork converts the model from tensorflow 1.0 to ONNX and uses the .Net [ONNX runtime](https://github.com/microsoft/onnxruntime) to run the face detection with csharp. The image processing is done with [ImageSharp](https://github.com/SixLabors/ImageSharp).
 
 Unfortunatly converting the face corrector model (see describtion below) to ONNX did not work out. The results do not match the original model.
-But even without it the results look pretty ok and its reasonable fast. It takes **40 ms** on a Intel Core I7 6700K.
+But even without it the results look pretty ok and its reasonable fast. It takes **25 ms** on a Intel Core I7 6700K.
+
+There is an example project in the subfolder `csharp.`
+
+#### Benchmark Results
+
+```
+BenchmarkDotNet=v0.13.1, OS=Windows 10.0.19043.1645 (21H1/May2021Update)
+Intel Core i7-6700K CPU 4.00GHz (Skylake), 1 CPU, 8 logical and 4 physical cores
+.NET SDK=6.0.300-preview.22204.3
+  [Host]     : .NET 5.0.16 (5.0.1622.16705), X64 RyuJIT
+  DefaultJob : .NET 5.0.16 (5.0.1622.16705), X64 RyuJIT
+
+
+|        Method |     Mean |    Error |   StdDev |
+|-------------- |---------:|---------:|---------:|
+| FaceDetection | 25.39 ms | 0.667 ms | 1.872 ms |
+
+// * Hints *
+Outliers
+  FaceDetectionBenchmark.FaceDetection: Default -> 9 outliers were removed (31.78 ms..34.66 ms)
+
+// * Legends *
+  Mean   : Arithmetic mean of all measurements
+  Error  : Half of 99.9% confidence interval
+  StdDev : Standard deviation of all measurements
+  1 ms   : 1 Millisecond (0.001 sec)
+````
+
 
 Example results:
 <p align="center">
   <img src="examples/example.png"/>
 </p>
 
-There is an example project in the subfolder `csharp.`
+#### ONNX conversion
 
 The conversion was done as following:
 
