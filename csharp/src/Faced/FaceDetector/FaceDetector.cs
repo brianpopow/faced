@@ -19,9 +19,11 @@ namespace Faced.FaceDector
 
         private readonly string modelResourceFile = "Faced.Resources.face_detector.onnx";
 
-        private readonly string inputImageName = @"img:0";
+        private static readonly int[] InputDimension = { 1, YoloConstants.YoloImageWidth, YoloConstants.YoloImageHeight, 3 };
 
-        private readonly string trainingFlagName = @"training:0";
+        private readonly DenseTensor<float> inputTensor = new(InputDimension);
+
+        private readonly Tensor<bool> trainingFlagTensor = new DenseTensor<bool>(new[] { 1 });
 
         public FaceDetector()
         {
@@ -49,9 +51,6 @@ namespace Faced.FaceDector
                 });
             });
 
-            var inputDimension = new[] { 1, YoloConstants.YoloImageWidth, YoloConstants.YoloImageHeight, 3 };
-            DenseTensor<float> inputTensor = new DenseTensor<float>(inputDimension);
-            
             var index = 0;
             imageResized.ProcessPixelRows(accessor =>
             {
@@ -69,12 +68,10 @@ namespace Faced.FaceDector
                 }
             });
 
-            Tensor<bool> trainingTensor = new DenseTensor<bool>(new[] { 1 });
-            trainingTensor[0] = false;
             var inputs = new List<NamedOnnxValue>
             {
-                NamedOnnxValue.CreateFromTensor(trainingFlagName, trainingTensor),
-                NamedOnnxValue.CreateFromTensor(inputImageName, inputTensor)
+                NamedOnnxValue.CreateFromTensor(YoloConstants.TrainingFlagName, trainingFlagTensor),
+                NamedOnnxValue.CreateFromTensor(YoloConstants.InputImageName, inputTensor)
             };
 
             using IDisposableReadOnlyCollection<DisposableNamedOnnxValue> results = faceDetector.Run(inputs);
@@ -105,7 +102,7 @@ namespace Faced.FaceDector
             return NoneMaximaSuppression(predictions);
         }
 
-        public static List<Prediction> NoneMaximaSuppression(List<Prediction> predictions)
+        private static List<Prediction> NoneMaximaSuppression(List<Prediction> predictions)
         {
             bool[] suppress = new bool[predictions.Count];
             float threshold = 0.2f;
