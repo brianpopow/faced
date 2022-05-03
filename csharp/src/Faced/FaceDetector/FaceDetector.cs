@@ -22,10 +22,6 @@ namespace Faced.FaceDector
         private readonly string inputImageName = @"img:0";
 
         private readonly string trainingFlagName = @"training:0";
-                
-        private const int ImageWidth = 288;
-
-        private const int ImageHeight = 288;
 
         public FaceDetector()
         {
@@ -36,6 +32,8 @@ namespace Faced.FaceDector
             reader.BaseStream.CopyTo(memoryStream);
             var modelBytes = memoryStream.ToArray();
 
+            // int gpuDeviceId = 0; // The GPU device ID to execute on
+            // faceDetector = new InferenceSession(modelBytes, SessionOptions.MakeSessionOptionWithCudaProvider(gpuDeviceId));
             faceDetector = new InferenceSession(modelBytes);
         }
 
@@ -45,13 +43,13 @@ namespace Faced.FaceDector
             {
                 x.Resize(new ResizeOptions
                 {
-                    Size = new Size(ImageWidth, ImageHeight),
+                    Size = new Size(YoloConstants.YoloImageWidth, YoloConstants.YoloImageHeight),
                     Mode = ResizeMode.Stretch,
                     Sampler = KnownResamplers.Lanczos3,
                 });
             });
 
-            Tensor<float> inputTensor = new DenseTensor<float>(new[] { 1, ImageWidth, ImageHeight, 3 });
+            Tensor<float> inputTensor = new DenseTensor<float>(new[] { 1, YoloConstants.YoloImageWidth, YoloConstants.YoloImageHeight, 3 });
             imageResized.ProcessPixelRows(accessor =>
             {
                 for (int y = 0; y < accessor.Height; y++)
@@ -87,7 +85,7 @@ namespace Faced.FaceDector
             {
                 if (prob.Current > threshold)
                 {
-                    Prediction prediction = new Prediction(image.Width, image.Height, prob.Current, xCenter.Current, yCenter.Current, gridPos);
+                    Prediction prediction = new Prediction(image.Width, image.Height, prob.Current, xCenter.Current, yCenter.Current, gridPos, boxWidth.Current, boxHeight.Current);
                     predictions.Add(prediction);
                 }
 
@@ -167,6 +165,37 @@ namespace Faced.FaceDector
                 img.DrawLines(color, 2.0f, points);
                 img.DrawText($"{prediction.Confidence:0.00}", font, Color.Red, new PointF(startX, startY));
             });
+        }
+
+        public static void DrawYoloTiles(Image image, Color color)
+        {
+            int width = image.Width;
+            int height = image.Height;
+
+            int tileWidth = width / YoloConstants.YoloTiles;
+            int tileHeight = height / YoloConstants.YoloTiles;
+            for (int y = 0; y < height; y+=tileHeight)
+            {
+                for (int x = 0; x < width; x+=tileWidth)
+                {
+                    int startX = x;
+                    int startY = y;
+
+                    var points = new PointF[]
+                    {
+                        new(startX, startY),
+                        new(startX + tileWidth, startY),
+                        new(startX + tileWidth, startY + tileHeight),
+                        new(startX, startY + tileHeight),
+                        new(startX, startY),
+                    };
+
+                    image.Mutate(img =>
+                    {
+                        img.DrawLines(color, 1.0f, points);
+                    });
+                }
+            }
         }
 
         public void Dispose()
