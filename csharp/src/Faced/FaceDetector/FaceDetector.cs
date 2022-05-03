@@ -49,17 +49,22 @@ namespace Faced.FaceDector
                 });
             });
 
-            Tensor<float> inputTensor = new DenseTensor<float>(new[] { 1, YoloConstants.YoloImageWidth, YoloConstants.YoloImageHeight, 3 });
+            var inputDimension = new[] { 1, YoloConstants.YoloImageWidth, YoloConstants.YoloImageHeight, 3 };
+            DenseTensor<float> inputTensor = new DenseTensor<float>(inputDimension);
+            
+            var index = 0;
             imageResized.ProcessPixelRows(accessor =>
             {
+                var inputSpan = inputTensor.Buffer.Span;
                 for (int y = 0; y < accessor.Height; y++)
                 {
                     Span<RgbaVector> pixelRow = accessor.GetRowSpan(y);
+
                     for (int x = 0; x < accessor.Width; x++)
                     {
-                        inputTensor[0, y, x, 0] = pixelRow[x].R;
-                        inputTensor[0, y, x, 1] = pixelRow[x].G;
-                        inputTensor[0, y, x, 2] = pixelRow[x].B;
+                        inputSpan[index++] = pixelRow[x].R;
+                        inputSpan[index++] = pixelRow[x].G;
+                        inputSpan[index++] = pixelRow[x].B;
                     }
                 }
             });
